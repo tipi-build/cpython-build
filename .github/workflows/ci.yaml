@@ -25,7 +25,9 @@ jobs:
           docker build . --progress=plain --tag tipi-py-builder:latest
           docker create --name builder-instance tipi-py-builder:latest
 
-          docker cp  builder-instance:${{env.OUTPUT_DIR}}/tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip .
+          docker cp builder-instance:${{env.OUTPUT_DIR}}/tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip .
+
+          ls -lah
 
       - uses: actions/upload-artifact@v3
         with:
