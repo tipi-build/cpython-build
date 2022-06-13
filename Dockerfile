@@ -1,0 +1,54 @@
+FROM ubuntu:16.04
+
+ENV OPENSSL_VERSION="1.1.1o"
+ENV PYTHON_VERSION="3.10.5"
+ENV INSTALL_DIR="/tipi-py/sysroot"
+ENV OUTPUT_DIR="/tipi-py"
+
+ENV CFLAGS="-O3 -pipe"
+ENV CXXFLAGS="-O3 -pipe"
+
+# all we need to do the build
+RUN apt update \
+ && apt install -y build-essential git curl wget zip unzip chrpath\
+ && apt install -y zlib1g-dev libbz2-dev uuid-dev tk-dev liblzma-dev libgdbm-dev libsqlite3-dev libbz2-dev libreadline-dev zlib1g-dev libncursesw5-dev libffi-dev
+ 
+# openssl from source -_-
+RUN wget --no-check-certificate https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz \
+ && tar xzvf openssl-$OPENSSL_VERSION.tar.gz \
+ && cd openssl-$OPENSSL_VERSION \
+ && ./config --prefix=$INSTALL_DIR --libdir=lib --openssldir=/etc/ssl \
+ && make -j1 depend \
+ && make -j$(expr $(nproc) + 1) \
+ && make install_sw
+
+# python from source
+RUN wget https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz \
+ && tar xzvf Python-$PYTHON_VERSION.tgz \
+ && cd Python-$PYTHON_VERSION 
+
+WORKDIR /Python-$PYTHON_VERSION
+
+# some of the magic that makes python "movable"
+# NOTE: by setting the RUNPATH (instead of RPATH) we still allow for monkeypatching
+# NOTE: we define $ORIGIN so that double-escaping-and-then-interpolation doesn't break everything... thanks many levels of autoconf+makefiles
+ENV ORIGIN="\$ORIGIN"
+ENV LDFLAGS_NODIST="-L$INSTALL_DIR/lib -Wl,--enable-new-dtags -Wl,-z,origin -Wl,-rpath='\$\$ORIGIN/../lib' -Wl,-rpath='\$\$ORIGIN'"
+
+# we enable PGO :top:
+RUN ./configure -C --with-openssl=$INSTALL_DIR --with-openssl-rpath=auto --enable-ipv6 --prefix=$INSTALL_DIR --enable-optimizations
+
+RUN make -j$(expr $(nproc) + 1)
+
+RUN make install
+
+# a small homegrown script to bend the dynamic-module's RPATH so they find their own dependencies
+# ...why oh why
+COPY patch_so_rpaths.sh /patch_so_rpaths.sh
+RUN chmod +x /patch_so_rpaths.sh \
+ && /patch_so_rpaths.sh $INSTALL_DIR
+
+# archive stuff so we can extract it easily
+RUN mkdir -p $OUTPUT_DIR \
+ && cd $INSTALL_DIR \
+ && zip -r $OUTPUT_DIR/tipi-python-$PYTHON_VERSION-w-openssl-$OPENSSL_VERSION.zip .  

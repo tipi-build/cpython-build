@@ -1,0 +1,56 @@
+name: build
+# This workflow is  triggered on pushes, pull requests to the repository.
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+env:
+  OPENSSL_VERSION: "1.1.1o"
+  PYTHON_VERSION: "3.10.5"
+
+jobs:
+  build-linux:
+    name: build-linux
+    runs-on: ubuntu-20.04
+    env:
+      INSTALL_DIR: "/tipi-py/sysroot"
+      OUTPUT_DIR: "/tipi-py"
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Build compatible Python release
+        run: |
+          docker build . --progress=plain --tag tipi-py-builder:latest
+          docker create --name builder-instance tipi-py-builder:latest
+
+          docker cp  builder-instance:${{env.OUTPUT_DIR}}/tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip .
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
+          path:  ~/tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          owner: tipi-build 
+          repo: seafile-build
+          commitish: main
+          tag_name: ${{ env.PYTHON_VERSION }}
+          release_name: ${{ env.PYTHON_VERSION }} ${{ github.sha }}
+          draft: true
+          prerelease: true 
+
+      - name: Upload tipi python package
+        uses: actions/upload-release-asset@v1
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: /tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
+          asset_name: tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
+          asset_content_type: application/zip
