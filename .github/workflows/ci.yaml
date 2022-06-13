@@ -32,7 +32,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
-          path:  ~/tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
+          path:  tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
 
       - name: Create Release
         uses: actions/create-release@v1
@@ -40,10 +40,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           owner: tipi-build 
-          repo: seafile-build
-          commitish: main
+          repo: cpython-build
           tag_name: ${{ env.PYTHON_VERSION }}
-          release_name: ${{ env.PYTHON_VERSION }} ${{ github.sha }}
+          release_name: tipi-python v${{ env.PYTHON_VERSION }} ${{ github.sha }}
           draft: true
           prerelease: true 
 
