@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-linux:
-    name: build-linux
+    name: Build & Package Python+OpenSSL
     runs-on: ubuntu-20.04
     env:
       INSTALL_DIR: "/tipi-py/sysroot"
@@ -35,6 +35,7 @@ jobs:
           path:  tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
 
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,6 +53,6 @@ jobs:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
+          asset_path: tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
           asset_name: tipi-python-${{env.PYTHON_VERSION}}-w-openssl-${{env.OPENSSL_VERSION}}.zip
           asset_content_type: application/zip
