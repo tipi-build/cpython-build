@@ -23,8 +23,6 @@ RUN wget --no-check-certificate https://www.openssl.org/source/openssl-$OPENSSL_
  && make -j$(expr $(nproc) + 1) \
  && make install_sw
 
-RUN readelf -d /tipi-py/sysroot/bin/openssl | grep -i -E 'rpath|runpath'
-RUN echo "hell" && readelf -d /tipi-py/sysroot/lib/libssl.so.1.1 | grep -i -E 'rpath|runpath'
 RUN tipi bundle $INSTALL_DIR $INSTALL_DIR/lib 0 
 
 # python from source
