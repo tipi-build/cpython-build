@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM tipibuild/tipi-ubuntu-1604-staging-694
 
 ENV OPENSSL_VERSION="1.1.1o"
 ENV PYTHON_VERSION="3.10.5"
@@ -45,6 +45,7 @@ RUN make install
 # a small homegrown script to bend the dynamic-module's RPATH so they find their own dependencies
 # ...why oh why
 COPY patch_so_rpaths.sh /patch_so_rpaths.sh
+RUN tipi bundle $INSTALL_DIR $INSTALL_DIR/lib 0 
 RUN chmod +x /patch_so_rpaths.sh \
  && /patch_so_rpaths.sh $INSTALL_DIR
 
