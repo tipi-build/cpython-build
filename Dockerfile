@@ -14,13 +14,18 @@ RUN apt update \
  && apt install -y zlib1g-dev libbz2-dev uuid-dev tk-dev liblzma-dev libgdbm-dev libsqlite3-dev libbz2-dev libreadline-dev zlib1g-dev libncursesw5-dev libffi-dev
  
 # openssl from source -_-
+ENV ORIGIN="\$ORIGIN"
 RUN wget --no-check-certificate https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz \
  && tar xzvf openssl-$OPENSSL_VERSION.tar.gz \
  && cd openssl-$OPENSSL_VERSION \
- && ./config --prefix=$INSTALL_DIR --libdir=lib --openssldir=/etc/ssl \
+ && ./config -Wl,--enable-new-dtags  -Wl,-rpath,\$\$ORIGIN/../lib -Wl,-rpath,\$\$ORIGIN/../../lib -Wl,-rpath,\$\$ORIGIN --prefix=$INSTALL_DIR --libdir=lib --openssldir=/etc/ssl \
  && make -j1 depend \
  && make -j$(expr $(nproc) + 1) \
  && make install_sw
+
+RUN readelf -d /tipi-py/sysroot/bin/openssl | grep -i -E 'rpath|runpath'
+RUN echo "hell" && readelf -d /tipi-py/sysroot/lib/libssl.so.1.1 | grep -i -E 'rpath|runpath'
+RUN tipi bundle $INSTALL_DIR $INSTALL_DIR/lib 0 
 
 # python from source
 RUN wget https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz \
@@ -44,10 +49,11 @@ RUN make install
 
 # a small homegrown script to bend the dynamic-module's RPATH so they find their own dependencies
 # ...why oh why
+WORKDIR $INSTALL_DIR
 COPY patch_so_rpaths.sh /patch_so_rpaths.sh
-RUN tipi bundle $INSTALL_DIR $INSTALL_DIR/lib 0 
 RUN chmod +x /patch_so_rpaths.sh \
  && /patch_so_rpaths.sh $INSTALL_DIR
+RUN tipi bundle $INSTALL_DIR $INSTALL_DIR/lib 0 
 
 # archive stuff so we can extract it easily
 RUN mkdir -p $OUTPUT_DIR \
