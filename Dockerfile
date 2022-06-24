@@ -27,7 +27,7 @@ RUN wget https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSIO
  && tar xzvf Python-$PYTHON_VERSION.tgz \
  && cd Python-$PYTHON_VERSION 
 
-WORKDIR /Python-$PYTHON_VERSION
+WORKDIR Python-$PYTHON_VERSION
 
 # some of the magic that makes python "movable"
 # NOTE: by setting the RUNPATH (instead of RPATH) we still allow for monkeypatching
