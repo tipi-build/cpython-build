@@ -50,9 +50,11 @@ WORKDIR $INSTALL_DIR
 COPY patch_so_rpaths.sh /patch_so_rpaths.sh
 RUN chmod +x /patch_so_rpaths.sh \
  && /patch_so_rpaths.sh $INSTALL_DIR
-RUN tipi bundle $INSTALL_DIR $INSTALL_DIR/lib 0 
+# Ensure RPATH is working relatively and doesn't rely on absolute RPATHs
+RUN mv $INSTALL_DIR $INSTALL_DIR-moved
+RUN tipi bundle $INSTALL_DIR-moved $INSTALL_DIR-moved/lib 0 
 
 # archive stuff so we can extract it easily
 RUN mkdir -p $OUTPUT_DIR \
- && cd $INSTALL_DIR \
+ && cd $INSTALL_DIR-moved \
  && zip -r $OUTPUT_DIR/tipi-python-$PYTHON_VERSION-w-openssl-$OPENSSL_VERSION.zip .  
