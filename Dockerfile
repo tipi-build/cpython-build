@@ -35,7 +35,6 @@ WORKDIR Python-$PYTHON_VERSION
 # some of the magic that makes python "movable"
 # NOTE: by setting the RUNPATH (instead of RPATH) we still allow for monkeypatching
 # NOTE: we define $ORIGIN so that double-escaping-and-then-interpolation doesn't break everything... thanks many levels of autoconf+makefiles
-ENV ORIGIN="\$ORIGIN"
 ENV LDFLAGS_NODIST="-L$INSTALL_DIR/lib -Wl,--enable-new-dtags -Wl,-z,origin -Wl,-rpath='\$\$ORIGIN/../lib' -Wl,-rpath='\$\$ORIGIN'"
 
 # we enable PGO :top:
