@@ -52,7 +52,7 @@ RUN chmod +x /patch_so_rpaths.sh \
  && /patch_so_rpaths.sh $INSTALL_DIR
 # Ensure RPATH is working relatively and doesn't rely on absolute RPATHs
 RUN mv $INSTALL_DIR $INSTALL_DIR-moved
-RUN tipi bundle $INSTALL_DIR-moved $INSTALL_DIR-moved/lib 0 
+RUN tipi bundle $INSTALL_DIR-moved $INSTALL_DIR-moved/lib 0 --dont-upgrade 
 
 # archive stuff so we can extract it easily
 RUN mkdir -p $OUTPUT_DIR \
