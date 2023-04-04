@@ -1,6 +1,6 @@
 Python 3.10+ build for Tipi
 ===========================
-
+Changes to try the tipi bundle utilities.
 In [tipi](https://tipi.build)'s release we ship a number of tools requiring recent versions of Python (that is 3.9+ at time of writing) to be available on the executing system (among other `emsdk`). 
 
 On the other hand `tipi-cli` should remain compatible with older releases of supported Linux distributions (Ubunt 16.04 we're looking at you) for which no official Python package has been released.
