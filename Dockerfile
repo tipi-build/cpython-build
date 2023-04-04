@@ -23,7 +23,7 @@ RUN wget --no-check-certificate https://www.openssl.org/source/openssl-$OPENSSL_
  && make -j$(expr $(nproc) + 1) \
  && make install_sw
 
-RUN tipi bundle $INSTALL_DIR $INSTALL_DIR/lib 0 
+RUN tipi --dont-upgrade bundle $INSTALL_DIR $INSTALL_DIR/lib 0 
 
 # python from source
 RUN wget https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz \
@@ -52,7 +52,7 @@ RUN chmod +x /patch_so_rpaths.sh \
  && /patch_so_rpaths.sh $INSTALL_DIR
 # Ensure RPATH is working relatively and doesn't rely on absolute RPATHs
 RUN mv $INSTALL_DIR $INSTALL_DIR-moved
-RUN tipi bundle $INSTALL_DIR-moved $INSTALL_DIR-moved/lib 0 --dont-upgrade 
+RUN tipi --dont-upgrade bundle $INSTALL_DIR-moved $INSTALL_DIR-moved/lib 0  
 
 # archive stuff so we can extract it easily
 RUN mkdir -p $OUTPUT_DIR \
